@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+function clearBrowserSave() {
+    if (!confirm("Clear saved browser copy?")) return;
+
+    localStorage.removeItem("genealogyData");
+    alert("Browser save cleared.");
+}
+
+
+/* =========================================================
+   EXPORT JSON FILE
+   =========================================================
+
+   This downloads your genealogy data as a .json file.
+
+   This is the recommended working data format for this tool.
+
+   ========================================================= */
+
+function exportJSON() {
+    const json = JSON.stringify(genealogy, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "genealogy-data.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+
+/* =========================================================
+   IMPORT JSON FILE
+   ========================================================= */
+
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+
+            if (!imported.people || !imported.roots) {
+                alert("Invalid genealogy JSON file.");
+                return;
+            }
+
+            genealogy = imported;
+            renderTree();
+            alert("JSON imported.");
+        }
+        catch (err) {
+            alert("Could not parse JSON file.");
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+
+/* =========================================================
+   REDRAW LINES WHEN WINDOW SIZE CHANGES
+   ========================================================= */
+
+window.addEventListener("resize", drawRelationshipLines);
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+createSampleTree();
+
+</script>
+</body>
+</html>
